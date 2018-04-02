@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>2012NightLightVS2016Nightlight</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+    <script src="./js/config.js"></script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;background-color: #000000;
+        }
+        #slider {
+            position: absolute;
+            left: 50%;
+            top: 0px;
+            background-color: #D3D3D3;
+            width: 5px;
+            height: 100%;
+            z-index: 9999;
+            display: none;
+        }
+        #slider:hover {
+            cursor: ew-resize;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer" class="fullSize">
+    <div id="slider"></div>
+</div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+    <p id="left" style="display: none; position: absolute; left: 20px;top: 50%; color: #ffffff;">2016</p>
+    <p id="right" style="display: none; position: absolute; right: 20px;top: 50%; color: #ffffff">2012</p>
+<script>
+    function onload(Cesium) {
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            imageryProvider:new Cesium.SingleTileImageryProvider({
+                url : './images/BlackMarble_2016.jpg'
+            }),
+            baseLayerPicker : false,
+            geocoder:true
+        });
+        $('#loadingbar').remove();
+        $('#slider').show();
+        $('#left').show();
+        $('#right').show();
+
+
+        var layers = viewer.imageryLayers;
+        var blackMarble = layers.addImageryProvider(new Cesium.SingleTileImageryProvider({
+            url: './images/BlackMarble_2012.jpg'
+        }));
+        blackMarble.splitDirection = Cesium.ImagerySplitDirection.RIGHT; // 新添加的影像图层只显示在滑块左侧
+
+        //分割条位置与slider同步
+        var slider = document.getElementById('slider');
+        viewer.scene.imagerySplitPosition = (slider.offsetLeft) / slider.parentElement.offsetWidth;
+
+        var dragStartX = 0;
+
+        document.getElementById('slider').addEventListener('mousedown', mouseDown, false);
+        window.addEventListener('mouseup', mouseUp, false);
+
+        function mouseUp() {
+            window.removeEventListener('mousemove', sliderMove, true);
+        }
+
+        function mouseDown(e) {
+            var slider = document.getElementById('slider');
+            dragStartX = e.clientX - slider.offsetLeft;
+            window.addEventListener('mousemove', sliderMove, true);
+        }
+
+        function sliderMove(e) {
+            var slider = document.getElementById('slider');
+            var splitPosition = (e.clientX - dragStartX) / slider.parentElement.offsetWidth;
+            slider.style.left = 100.0 * splitPosition + "%";
+            viewer.scene.imagerySplitPosition = splitPosition;
+        }
+    }
+</script>
+</body>
+</html>

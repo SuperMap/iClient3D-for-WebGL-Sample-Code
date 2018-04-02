@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>沿线飞行</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/bootstrap-select.min.js"></script>
+    <script src="./js/config.js"></script>
+    <script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;background-color: #000000;
+        }
+        #play{
+            content: url(./images/play.png);
+            height: 30px;
+            padding: 5px;
+        }
+        #pause{
+            content: url(./images/pause.png);
+            height: 30px;
+            padding: 5px;
+        }
+        #stop{
+            content: url(./images/stop.png);
+            height: 30px;
+            padding: 5px;
+        }
+        .bootstrap-select {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+<div id='toolbar' style="position : absolute;left : 5px; top : 5px;display: none;" >
+    <span type="button" id="play" class="button black" title="开始"></span>
+    <span type="button" id="pause" class="button black" title="暂停"></span>
+    <span type="button" id="stop" class="button black" title="停止"></span>
+    <div style="width: 150px;">
+        <select id="stopList" class="selectpicker show-tick form-control" >
+            <!--<option disabled selected value>&#45;&#45;选择站点&#45;&#45;</option>-->
+        </select>
+    </div>
+
+</div>
+<script>
+    //请在联网状态下查看此飞行范例
+    var flyManager;
+    function onload(Cesium) {
+        var toolbar = document.getElementById('toolbar');
+        var viewer = new Cesium.Viewer('cesiumContainer',{
+            imageryProvider: new Cesium.BingMapsImageryProvider({
+                url : 'https://dev.virtualearth.net',
+                mapStyle : Cesium.BingMapsStyle.AERIAL
+            })
+        });
+        var scene = viewer.scene;
+        scene.globe.depthTestAgainstTerrain = false;
+        var camera = scene.camera;
+        //添加S3M图层服务
+        var promise =  scene.addS3MTilesLayerByScp(URL_CONFIG.SCP_NIAOCHAO,{name : 'niaochao'});
+        Cesium.when(promise).then(function(){
+            camera.setView({
+                destination : Cesium.Cartesian3.fromDegrees(116.3801,39.9874,12.0),
+                orientation : {
+                    heading:6.260995919619558,
+                    pitch : 0,
+                    roll : 0
+                }
+            });
+            var routes = new Cesium.RouteCollection();
+            //添加fpf飞行文件，fpf由SuperMap iDesktop生成
+            var fpfUrl = './SampleData/fpf/niaocao.fpf';
+            routes.fromFile(fpfUrl);
+            //初始化飞行管理
+            flyManager = new Cesium.FlyManager({
+                scene : scene,
+                routes : routes
+            });
+            //注册站点到达事件
+            flyManager.stopArrived.addEventListener(function(routeStop){
+                var stopName = routeStop.stopName;
+                var entity = new Cesium.Entity({
+                    description : '到达站点 : ' + stopName,
+                    name : stopName
+                });
+                viewer.selectedEntity = entity;
+                setTimeout(function(){
+                    viewer.selectedEntity = undefined;
+                },1000);
+                routeStop.waitTime = 1;
+            });
+            if(flyManager.readyPromise){
+                //生成飞行文件中的所有站点列表
+                Cesium.when(flyManager.readyPromise,function(){
+                    var allStops = flyManager.getAllRouteStops();
+                    var menu = document.getElementById('stopList');
+                    var flyLine =[];
+                    for(var i = 0,j = allStops.length;i < j;i++){
+                        var option = document.createElement('option');
+                        //option.textContent = allStops[i].stopName;
+                        option.textContent = "站点 "+(i+1);
+                        option.value = allStops[i].index;
+                        menu.appendChild(option);
+                        flyLine.push(allStops[i].point);
+                        viewer.entities.add({
+                            position : allStops[i].point,
+                            billboard :{
+                                image : './images/station.png',
+                                width:30,
+                                height:40,
+                            }
+                        });
+                    }
+                    var polyline = viewer.entities.add({
+                        polyline : {
+                            positions : flyLine,
+                            width : 10,
+                            followSurface : false,
+                            material : new Cesium.PolylineArrowMaterialProperty(Cesium.Color.RED)
+                        }
+                    });
+                    $('#stopList').selectpicker('refresh');
+                    //注册站点切换事件
+                    $('#stopList').change(function(){
+                        flyManager && flyManager.pause();
+                        var index = parseInt($(this).val());
+                        var route = flyManager.currentRoute;
+                        var stop = route.get(index);
+                        flyManager.currentStopIndex = index;
+                        flyManager.viewToStop(stop);
+                        flyManager && flyManager.pause();
+                    });
+                });
+            }
+        });
+        $('#play').click(function(){
+            flyManager && flyManager.play();
+        });
+        $('#pause').click(function(){
+            flyManager && flyManager.pause();
+        });
+        $('#stop').click(function(){
+            flyManager && flyManager.stop();
+        });
+        $('#toolbar').show();
+        $('#loadingbar').remove();
+    }
+</script>
+</body>
+</html>

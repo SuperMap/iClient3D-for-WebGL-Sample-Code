@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>光晕效果</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+    <script src="./js/config.js"></script>
+    <script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+        #toolbar{
+            margin: 5px;
+            padding: 2px 5px;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id='toolbar' style="position: absolute;left: 5px;top: 5px;">
+    <label style="color: #FFFFFF">亮度阈值: </label>
+    <input type="range"  id="threshold" min="0" max="1"  value="0.9" step="0.01" style="width: 170px">
+    <label id ="current_threshold" style="color: #FFFFFF"></label><br/><br/>
+    <label style="color: #FFFFFF">泛光强度: </label>
+    <input type="range"  id="bloomIntensity" min="0" max="10"  value="2.0" step="0.01" style="width: 170px">
+    <label id ="current_bloomIntensity" style="color: #FFFFFF"></label><br/><br/>
+    <label style="color: #FFFFFF">场景泛光</label>
+    <input type="checkbox"  id="show" checked = true>&nbsp&nbsp&nbsp
+    <input type="button" id="custom"  value="光晕效果"  class="button black">
+</div>
+<script>
+    /*示范代码说明：
+     *本示范程序为场景泛光效果运用展示，结合发光线和时间轴简单制作了光晕流动效果
+     *
+     *主要涉及接口：
+     * bloomEffect
+     * PolylineGlowMaterialProperty
+     * CallbackProperty
+     *
+     * 示范代码：
+    */
+    function onload(Cesium) {
+        var imageryProvider = new Cesium.MapboxImageryProvider({ //地图影像服务
+            mapId: 'mapbox.dark',
+        });
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+             imageryProvider :imageryProvider,
+             infobox:false
+        });
+        viewer.scene.camera.setView({
+            destination : new Cesium.Cartesian3.fromDegrees(116.43098603976885,40.00959231890548,802.0599472830233),
+            orientation : {
+                heading : 4.250958,
+                pitch : -0.337703,
+                roll : 6.283185
+            }
+        });
+        viewer.scene.fxaa = true;
+        viewer.scene.bloomEffect.show = true;//启用泛光效果
+        $("#current_threshold").text($("#threshold").val());//初始化效果
+        $("#current_bloomIntensity").text($("#bloomIntensity").val());
+        viewer.scene.bloomEffect.threshold = 0.9;
+        viewer.scene.bloomEffect.bloomIntensity = 2.0;
+
+        //加载建筑线路数据
+        var building = new Cesium.GeoJsonDataSource();
+        building.load('./data/building.geojson',{
+        });
+        viewer.dataSources.add(building);
+        var entities = building.entities.values;
+        var road = new Cesium.GeoJsonDataSource();
+        road.load('./data/road.geojson',{
+        });
+        viewer.dataSources.add(road);
+        var entities1 = road.entities.values;
+        var road1 = new Cesium.GeoJsonDataSource();
+        road1.load('./data/road1.geojson',{
+        });
+        viewer.dataSources.add(road1);
+        var entities2 = road1.entities.values;
+        var imageryLayers = viewer.imageryLayers;
+        if (imageryLayers.length > 0) {
+            var layer = imageryLayers.get(0);
+            layer['brightness'] = 0.0;
+        }
+        //调节场景环境
+        viewer.scene.sun.show = false;
+        viewer.scene.moon.show = false;
+        viewer.scene.skyBox.show = false;
+
+        //绘制光晕线的流动效果
+        $("#custom").on("click",function () {
+             for (var i = 0; i < entities.length; i++) {
+                var entity = entities[i];
+                entity.polygon.material = new Cesium.Color(0.6, 0.6, 0.6,0.5);;
+                entity.polygon.outline = false;
+                entity.polygon.extrudedHeight = (entity.properties.HEIGHT)*1;
+            }
+            for (var i = 0; i < entities1.length; i++) {
+                var entity = entities1[i];
+                entity.polyline.width = 20;
+                entity.polyline.material = new Cesium.PolylineGlowMaterialProperty({ //设置Glow材质
+                    glowPower: 0.1,
+                    color: Cesium.Color.YELLOW
+                });}
+            for (var i = 0; i < entities2.length; i++) {
+                var entity = entities2[i];
+                entity.polyline.width = 20;
+                entity.polyline.material = new Cesium.PolylineGlowMaterialProperty({ //设置Glow材质
+                    glowPower: 0.1,
+                    color: Cesium.Color.YELLOW
+                });}
+            var start = Cesium.JulianDate.now();//设定日期时间
+			var stop = Cesium.JulianDate.addSeconds(start, 36, new Cesium.JulianDate());
+			viewer.clock.startTime = start.clone();
+			viewer.clock.stopTime = stop.clone();
+			viewer.clock.currentTime = start.clone();
+			viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP;
+			viewer.clock.multiplier = 10;
+			var property1 = new Cesium.SampledPositionProperty();
+	        var time1 = Cesium.JulianDate.addSeconds(start, 0, new Cesium.JulianDate());
+	        var time2 = Cesium.JulianDate.addSeconds(start, 35, new Cesium.JulianDate());
+	        var position1 = Cesium.Cartesian3.fromDegrees(116.4100385990035, 40.007939867095004);
+	        var position2 = Cesium.Cartesian3.fromDegrees(116.41086535519213, 40.00278479909533);
+	        property1.addSample(time1, position1);
+	        property1.addSample(time2, position2);
+            var entity = viewer.entities.add({//采用图片点
+		    availability : new Cesium.TimeIntervalCollection([new Cesium.TimeInterval({
+		        start : start,
+		        stop : stop,
+		        trails: 5,
+		        duration: 25,
+		    })]),
+		    position : property1,
+		    orientation : new Cesium.VelocityOrientationProperty(property1),
+		    billboard :{
+                      image : 'images/point.png',
+                      width:32,
+                      height:32,
+                      color :new Cesium.Color(1, 1, 0, 1)
+                 },
+		    path : {
+		     resolution : 1,
+		     material : new Cesium.PolylineGlowMaterialProperty({
+		     glowPower : 0.1,
+		     color : new Cesium.Color(1, 1, 0, 1)
+		     }),
+		     width : 10
+		     }
+		 });
+		    var startLatitude = 39.997611493826781;
+			var startLongitude = 116.41844597995104;
+			var endLongitude;
+			var endLatitude;
+			var startTime = Cesium.JulianDate.now();
+			var isConstant = false;var cal = 0;
+			var redLine =  viewer.entities.add({
+			    polyline : {
+			        positions : new Cesium.CallbackProperty(function(time, result) {
+			            cal += 1;
+			            if(cal < 500){
+			            	endLongitude = startLongitude - 0.0004 * Cesium.JulianDate.secondsDifference(time, startTime);
+			            };
+			            return Cesium.Cartesian3.fromDegreesArray([startLongitude, startLatitude, endLongitude, startLatitude], Cesium.Ellipsoid.WGS84, result);
+			            }, isConstant),
+			        width : 10,
+			        material : new Cesium.PolylineGlowMaterialProperty({
+	                    glowPower: 0.6,
+	                    color: Cesium.Color.YELLOW
+	                })
+			    }
+			});
+		    var startLatitude1 = 39.993891090977975;
+			var startLongitude1 = 116.40186222346152;
+			var endLongitude1;
+			var endLatitude1;
+			var isConstant1 = false;var cal1 = 0;
+			var redLine1 =  viewer.entities.add({
+			    polyline : {
+			        positions : new Cesium.CallbackProperty(function(time, result) {
+			            cal1 += 1;
+			            if(cal1 < 500){//用于结束属性回调
+			            	endLongitude1 = startLongitude1 + 0.00023 * Cesium.JulianDate.secondsDifference(time, startTime);
+			            };
+			            return Cesium.Cartesian3.fromDegreesArray([startLongitude1, startLatitude1, endLongitude1, startLatitude1], Cesium.Ellipsoid.WGS84, result);
+			            }, isConstant1),
+			        width : 10,
+			        material : new Cesium.PolylineGlowMaterialProperty({
+	                    glowPower: 0.1,
+	                    color: Cesium.Color.YELLOW
+	                })
+			    }
+			});
+			var startLatitude2 = 39.987933583148163;
+			var startLongitude2 = 116.40738203683853;
+			var endLongitude2;
+			var endLatitude2;
+			var isConstant2 = false;var cal2 = 0;
+			var redLine2 =  viewer.entities.add({
+			    polyline : {
+			        positions : new Cesium.CallbackProperty(function(time, result) {
+			            cal2 += 1;
+			            if(cal2 < 100)
+			            {
+			            	endLongitude2 = startLongitude2 + 0.00013 * Cesium.JulianDate.secondsDifference(time, startTime);
+			            	endLatitude2 = startLatitude2 + 0.00025 * Cesium.JulianDate.secondsDifference(time, startTime);
+			            };
+			            return Cesium.Cartesian3.fromDegreesArray([startLongitude2, startLatitude2, endLongitude2, endLatitude2], Cesium.Ellipsoid.WGS84, result);
+			            }, isConstant2),
+			        width : 10,
+			        material : new Cesium.PolylineGlowMaterialProperty({
+	                    glowPower: 0.1,
+	                    color: Cesium.Color.YELLOW
+	                })
+			    }
+			});
+			var startLatitude3 = 39.9881788481662;
+			var startLongitude3 = 116.410665012176;
+			var endLongitude3;
+			var endLatitude3;
+			var isConstant2 = false;var cal2 = 0;
+			var redLine2 =  viewer.entities.add({
+			    polyline : {
+			        positions : new Cesium.CallbackProperty(function(time, result) {
+			            cal2 += 1;
+			            if(cal2 < 180)
+			            {
+			            	endLongitude3 = startLongitude3 + 0.0 * Cesium.JulianDate.secondsDifference(time, startTime);
+			            	endLatitude3 = startLatitude3 + 0.00025 * Cesium.JulianDate.secondsDifference(time, startTime);
+			            };
+			            return Cesium.Cartesian3.fromDegreesArray([startLongitude3, startLatitude3, endLongitude3, endLatitude3], Cesium.Ellipsoid.WGS84, result);
+			            }, isConstant2),
+			        width : 10,
+			        material : new Cesium.PolylineGlowMaterialProperty({
+	                    glowPower: 0.1,
+	                    color: Cesium.Color.YELLOW
+	                })
+			    }
+			});
+            });
+
+        //场景泛光效果的开关
+        $("#show").on("input change",function(){
+            viewer.scene.bloomEffect.show = this.checked;
+        });
+
+        //泛光亮度阈值调节
+        $("#threshold").on("input change",function(){
+            $("#current_threshold").text(this.value);
+            viewer.scene.bloomEffect.threshold = this.value;
+        });
+
+        //泛光强度
+        $("#bloomIntensity").on("input change",function(){
+            $("#current_bloomIntensity").text(this.value);
+                viewer.scene.bloomEffect.bloomIntensity = this.value;
+            });
+    };
+</script>
+</body>

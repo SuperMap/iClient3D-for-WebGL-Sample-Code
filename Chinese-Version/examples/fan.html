@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>鸟巢水面特效</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/config.js"></script>
+    <script src="./js/tooltip.js"></script>
+	<script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;background-color: #000000;
+        }
+        #toolbar{
+            margin: 5px;
+            padding: 2px 5px;
+            position: absolute;
+            left: 10px;
+            top: 25px;
+            padding: 4px;
+            border-radius: 4px;
+            display: block;
+        }
+        .drawCur{
+            cursor: url(./images/cur/draw.cur), auto;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    function onload(Cesium) {
+        //初始化viewer部件
+        var viewer = new Cesium.Viewer('cesiumContainer');
+        var scene = viewer.scene;
+        var widget = viewer.cesiumWidget;
+        $('#loadingbar').remove();
+        try{
+            //添加鸟巢建筑图层
+            var promise1 = scene.addS3MTilesLayerByScp(URL_CONFIG.SCP_NIAOCHAO,{name : 'niaochao'});
+            //添加鸟巢水面图层
+            var promise2 = scene.addS3MTilesLayerByScp(URL_CONFIG.SCP_NIAOCHAO_WATER,{name : 'water'});
+            Cesium.when.all([promise1,promise2],function(layers){
+                //查找水面图层
+                var waterLayer=scene.layers.find('water');
+                var style=new Cesium.Style3D();
+                //调整水面图层的底部高程，确保水面与模型贴合
+                style.bottomAltitude = -4.8;
+                waterLayer.style3D = style;
+                //修改风格后需刷新
+                waterLayer.refresh();
+                //设置相机位置、视角，便于观察场景
+                scene.camera.setView({
+                    destination : new Cesium.Cartesian3.fromDegrees(116.3484,40.0023,745.178210746775),
+                    orientation : {
+                        heading :1.7294,
+                        pitch :-0.2702,
+                        roll : 0
+                    }
+                });
+                var fanUrl = './data/Fan.s3m';
+                var pillarUrl = './data/Pillar.s3m';
+                var keymap = {};
+                keymap[fanUrl] = [];
+                keymap[pillarUrl] = [];
+                var layer = new Cesium.DynamicLayer3D(scene._context,[fanUrl,pillarUrl]);
+                scene.primitives.add(layer);
+                var points=[[2.0313155090074373, 0.6979275273005257, 14.178823785006545],[2.0313148066369484, 0.697940277934282, 9.703581029091447],[2.0313175834314876, 0.6979533443634449, 9.526341432946568],[2.0312818066593668, 0.6979274843620786, 9.76453912698795],[2.0312824921997064, 0.6979402137917823, 9.758136659701757],[2.031284273653579, 0.6979523657753282, 9.755634883840992],[2.031396345778208, 0.6979300565930942, 10.244807559983112],[2.0314045311201023, 0.6979471987159858, 15.45654019275768],[2.0314065109381616, 0.6980175493812796, 13.47556918239933],[2.031362310270713, 0.6980765315232405, 9.474453617616346],[2.0313537479252153, 0.6981042731369563, 9.476571841345013],[2.031323517213406, 0.6981956112715441, 9.449474316789603],[2.0314005945977582, 0.698260998699172, 9.351074135247995],[2.031347731207494, 0.6982686193402143, 9.399519161321836],[2.0310922050235183, 0.6981543152543632, 9.83325011841878],[2.0311003641918735, 0.6982046527184711, 9.56978319863861],[2.031011881631793, 0.6981942537965187, 9.550795840086796],[2.0312133988957486, 0.6980924171659237, 9.482553496419039],[2.031214569621687, 0.6980250300667677, 9.491382205365696],[2.031190409837162, 0.6979546070242147, 9.320518424829295],[2.0314497998910515, 0.6982011589827918, 9.27089737676878],[2.031080281187201, 0.6980386387068549, 9.621475956680541],[2.0310850764389556, 0.6980985047364341, 9.61161128115213],[2.0310906620609033, 0.6979703997894628, 9.464622565630028],[2.0309896584013782, 0.6981571878121041, 9.656914419384377]];
+                for(var i = 0; i<points.length;i++){
+                    var point = points[i];
+                    var fanState =  new Cesium.DynamicObjectState({
+                        id : i,
+                        longitude : Cesium.Math.toDegrees(point[0]),
+                        latitude :  Cesium.Math.toDegrees(point[1]),
+                        altitude : point[2],
+                        scale : new Cesium.Cartesian3(0.1,0.1,0.1),
+                        offset : new Cesium.Cartesian3(0,0,690)
+                    });
+                    keymap[fanUrl].push(fanState);
+                    var pillarState = new Cesium.DynamicObjectState({
+                        id : i,
+                        longitude : Cesium.Math.toDegrees(point[0]),
+                        latitude :  Cesium.Math.toDegrees(point[1]),
+                        altitude : point[2],
+                        scale : new Cesium.Cartesian3(0.1,0.1,0.1)
+                    });
+                    keymap[pillarUrl].push(pillarState);
+                    for(var key in keymap){
+                        layer.updateObjectWithModel(key,keymap[key]);
+                    };
+                }
+                
+                var fanArr = keymap[fanUrl];
+                setInterval(function(){
+                    if(fanArr.length>0){
+                        for(var i = 0;i < fanArr.length; i++){
+                            if(fanArr[i].pitch>10000){
+                                fanArr[i].pitch = 0; 
+                            }
+                            fanArr[i].pitch += 0.5;
+                        }
+                        layer.updateObjectWithModel(fanUrl,fanArr)
+                    }
+                    else return;
+                },50);
+            },function(){
+                var title = '加载SCP失败，请检查网络连接状态或者url地址是否正确？';
+                widget.showErrorPanel(title, undefined, e);
+            });
+        }
+        catch(e){
+            if (widget._showRenderLoopErrors) {
+                var title = '渲染时发生错误，已停止渲染。';
+                widget.showErrorPanel(title, undefined, e);
+            }
+        }
+    }
+    </script>
+</body>
+</html>

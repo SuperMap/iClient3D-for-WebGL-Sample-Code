@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>SQL Query</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/config.js"></script>
+    <script src="./js/supermap/SuperMap.Include.js"></script>
+    <script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+        body {
+            background: #000;
+            color: #eee;
+            font-family: sans-serif;
+            font-size: 9pt;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #toolbar{
+            background: rgba(42, 42, 42, 0.4);
+            padding: 8px;
+        }
+        input[type=text]{
+            TEXT-ALIGN: center;
+            z-index: 3;
+            height: 18px;
+            background: none;
+            border: none;
+            padding: 5px 0;
+            -webkit-transition: 0.3s;
+            transition: 0.3s;
+            border-bottom: 2px solid #b8b2b2;
+            color: aliceblue;
+        }
+    </style>
+</head>
+<body class="loading">
+<div id="cesiumContainer"></div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+<div id="toolbar"  style="position: absolute;left: 5px;top: 5px;display: block;">
+    <label style="font: 400 13.3333px Arial;">SQL</label><input type="text" id="SQL" value="SMAREA>5000">
+    <button type="button" id="search" class="button black">查询</button>
+</div>
+<div id="bubble" class="bubble" >
+    <div id="tools" style="text-align : right">
+    <span  class="fui-cross" title="关闭" id="close" style="color: darkgrey;padding:5px"></span>
+    </div>
+<div style="overflow-y:scroll;height:150px" id="tableContainer"><table id="tab"></table></div>
+</div>
+<script>
+    function onload(Cesium) {
+        var viewer = new Cesium.Viewer('cesiumContainer',{
+            imageryProvider: new Cesium.BingMapsImageryProvider({
+                url : 'https://dev.virtualearth.net',
+                mapStyle : Cesium.BingMapsStyle.AERIAL
+            })
+        });
+        var scene = viewer.scene;
+        var widget = viewer.cesiumWidget;
+        var IDs=[];
+        $('#loadingbar').remove();
+        try{
+            var promise = scene.open('http://support.supermap.com.cn:8090/iserver/services/3D-CBD/rest/realspace');
+            Cesium.when(promise,function(layer){
+                //设置相机位置、视角，便于观察场景
+                scene.camera.setView({
+                    destination : new Cesium.Cartesian3.fromDegrees(116.4566,39.9149,5323.445971240632),
+                    orientation : {
+                        heading : 3.1612,
+                        pitch : -1.5188,
+                        roll : 6.283185307179563
+                    }
+                });
+                var buildingLayer = scene.layers.find("Building@CBD");
+                $("#search").click(function(){
+                    doSqlQuery($("#SQL").val()); 
+                });
+                
+            },function(){
+                var title = '加载SCP失败，请检查网络连接状态或者url地址是否正确？';
+                widget.showErrorPanel(title, undefined, e);
+            });
+        }
+        catch(e){
+            if (widget._showRenderLoopErrors) {
+                var title = '渲染时发生错误，已停止渲染。';
+                widget.showErrorPanel(title, undefined, e);
+            }
+        }
+        
+        function onQueryComplete(queryEventArgs){
+            var selectedFeatures = queryEventArgs.originResult.features;
+            viewer.entities.removeAll();
+            for(var i = 0;i < selectedFeatures.length;i++ ){
+                var value = selectedFeatures[i].fieldValues["0"];
+                var feature = selectedFeatures[i];
+                for(var j = 0; j < feature.fieldNames.length ; j++){
+                    var index = j.toString();
+                    if(j == 0){
+                         var des = '<table class="cesium-infoBox-defaultTable"><tbody>' + '<tr><th>' + selectedFeatures[i].fieldNames["0"] + '</th><td>' + selectedFeatures[i].fieldValues["0"] + '</td></tr>';
+                    }
+                    else if( j == feature.fieldNames.length - 1){
+                        des += '<tr><th>' + selectedFeatures[i].fieldNames[index] + '</th><td>' + selectedFeatures[i].fieldValues[index] + '</td></tr>' + "</tbody></table>";
+                    }
+                    else{
+                        des += '<tr><th>' + selectedFeatures[i].fieldNames[index] + '</th><td>' + selectedFeatures[i].fieldValues[index] + '</td></tr>';
+                    }
+                }
+                viewer.entities.add({
+                    position : Cesium.Cartesian3.fromDegrees(parseFloat(selectedFeatures[i].fieldValues["12"]),parseFloat(selectedFeatures[i].fieldValues["13"]),parseFloat(selectedFeatures[i].fieldValues["16"])),
+                    billboard :{
+                        image : './images/location4.png',
+                        width:30,
+                        height:40,
+                        
+                    },
+                    name : selectedFeatures[i].fieldValues["11"],
+                    description: des
+                });
+                IDs.push(parseInt(value)+11);
+            }
+            var buildingLayer = scene.layers.find("Building@CBD");
+            if(IDs.length>0){
+                buildingLayer.setSelection(IDs);
+            }
+        }
+        function doSqlQuery(SQL){
+            var getFeatureParam, getFeatureBySQLService, getFeatureBySQLParams;
+            getFeatureParam = new SuperMap.REST.FilterParameter({
+                attributeFilter: SQL
+            });
+            getFeatureBySQLParams = new SuperMap.REST.GetFeaturesBySQLParameters({
+                queryParameter: getFeatureParam,
+                toIndex : -1,
+                datasetNames: ["二维数据:" + "Building"]
+            });
+            var url = 'http://www.supermapol.com/realspace/services/data-cbd/rest/data';
+            getFeatureBySQLService = new SuperMap.REST.GetFeaturesBySQLService(url, {
+                eventListeners: {
+                    "processCompleted": onQueryComplete, 
+                    "processFailed": processFailed
+                }
+            });
+            getFeatureBySQLService.processAsync(getFeatureBySQLParams);
+        }
+
+        function processFailed(queryEventArgs){
+            alert('查询失败！');
+        }
+
+   }
+</script>
+</body>
+</html>
