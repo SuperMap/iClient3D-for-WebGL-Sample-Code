@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Index Position</title>
+    <link href="./css/widgets.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<script>
+	function onload(Cesium){
+		var viewer = new Cesium.Viewer('cesiumContainer',{
+			geocoder : true
+		});
+        //请开发者自行到supermap online官网（http://www.supermapol.com/）申请key
+        viewer.geocoder.viewModel.geoKey = '79F9yph6kv8c8I9aARQUxtvn';
+	}
+    
+</script>
+</body>
+</html>

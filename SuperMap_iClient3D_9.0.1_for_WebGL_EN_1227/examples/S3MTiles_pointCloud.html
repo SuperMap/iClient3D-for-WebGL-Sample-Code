@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Point Cloud</title>
+    <link href="./css/widgets.css" rel="stylesheet">
+    <script src="./js/config.js"></script>
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/jquery.min.js"></script>
+	<script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    function onload(Cesium) {
+        var viewer = new Cesium.Viewer('cesiumContainer');
+        var scene = viewer.scene;
+        var widget = viewer.cesiumWidget;
+        $('#loadingbar').remove();
+        try{
+            //add S3M layer of point clound data
+            var promise = scene.addS3MTilesLayerByScp(URL_CONFIG.SCP_POINTCLOUD,{
+                name : 'pointcloud'
+            });
+            Cesium.when(promise,function(layer){
+                //Set camera view to layer location
+                scene.camera.setView({
+                    destination : new Cesium.Cartesian3.fromDegrees(109.30704631259765,0.4041924265624667,234.19698496700337),
+                    orientation : {
+                        heading : 5.803934687704866,
+                        pitch : -0.36706183709782314,
+                        roll : 1.3322676295501878e-14
+                    }
+                });
+            },function(e){
+                if (widget._showRenderLoopErrors) {
+                    var title = 'Failed to load SCP, please check the network connection status or the URL';
+                    widget.showErrorPanel(title, undefined, e);
+                }
+            });
+        }
+        catch(e){
+            if (widget._showRenderLoopErrors) {
+                var title = 'An error occurred while rendering.  Rendering has stopped.';
+                widget.showErrorPanel(title, undefined, e);
+            }
+        }
+    }
+    </script>
+</body>
+</html>

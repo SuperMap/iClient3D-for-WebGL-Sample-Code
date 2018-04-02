@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Bird's Nest Water Effect</title>
+    <link href="./css/widgets.css" rel="stylesheet">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/config.js"></script>
+	<script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    function onload(Cesium) {
+        var viewer = new Cesium.Viewer('cesiumContainer');
+        var scene = viewer.scene;
+        var widget = viewer.cesiumWidget;
+        $('#loadingbar').remove();
+        try{
+            //Add Nest building layer
+            var promise1 = scene.addS3MTilesLayerByScp(URL_CONFIG.SCP_NIAOCHAO,{name : 'niaochao'});
+            //Add water layer 
+            var promise2 = scene.addS3MTilesLayerByScp(URL_CONFIG.SCP_NIAOCHAO_WATER,{name : 'water'});
+            Cesium.when.all([promise1,promise2],function(layers){
+                //find the water layer
+                var waterLayer=scene.layers.find('water');
+                var style=new Cesium.Style3D();
+                // set the bottom altitude of water layer to ensure water surface can match the model
+                style.bottomAltitude = -4.8;
+                waterLayer.style3D = style;
+                //refresh the layer after changing the style
+                waterLayer.refresh();
+                //Set camera view to the layer location
+                scene.camera.setView({
+                    destination : new Cesium.Cartesian3.fromDegrees(116.3899,40.0001,110.0),
+                    orientation : {
+                        heading :3.5722815225236584,
+                        pitch :-0.35756382305481216,
+                        roll : 2.602362769721367e-13
+                    }
+                });
+            },function(){
+                var title = 'Failed to load SCP, please check the network connection status or the URL';
+                widget.showErrorPanel(title, undefined, e);
+            });
+        }
+        catch(e){
+            if (widget._showRenderLoopErrors) {
+                var title = 'An error occurred while rendering.  Rendering has stopped.';
+                widget.showErrorPanel(title, undefined, e);
+            }
+        }
+    }
+    </script>
+</body>
+</html>

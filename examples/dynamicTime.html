@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Temporal Layer</title>
+    <link href="./css/widgets.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+    <script src="./js/config.js"></script>
+    <script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<script>
+
+    function onload(Cesium) {
+    	var viewer = new Cesium.Viewer('cesiumContainer',{
+            animation:true
+        });
+
+        $(".cesium-viewer-animationContainer").hide();
+
+
+        var imageryLayers = viewer.imageryLayers;
+        var imageryProvider = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG0
+        });
+        var imageryProvider1 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG1
+        });
+        var imageryProvider2 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG2
+        });
+        var imageryProvider3 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG3
+        });
+        var imageryProvider4 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG4
+        });
+        var imageryProvider5 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG5
+        });
+        var imageryProvider6 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG6
+        });
+        var imageryProvider7 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG7
+        });
+        var imageryProvider8 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG8
+        });
+        var imageryProvider9 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG9
+        });
+        var imageryProvider10 = new Cesium.SuperMapImageryProvider({
+            url : URL_CONFIG.TENSE_IMG10
+        });
+        var layer = imageryLayers.addImageryProvider(imageryProvider);
+        var layer1 = imageryLayers.addImageryProvider(imageryProvider1);
+        layer1.alpha = 0;
+
+        viewer.animation.viewModel.timeFormatter = function(date, viewModel) {
+            $(".cesium-viewer-bottom").css("left", "0");
+            //Each frame executes the callback function
+            if(layer.alpha >= 0 ) {
+                layer.alpha -= 0.005;
+                layer1.alpha += 0.005;
+            }
+            if(layer.alpha < 0) {
+                //When the first layer is transparent, execute the next gradual change
+                changeTimeFormatter(layer, layer1, imageryProviders);
+            }
+        }
+
+        var n = 0;
+        imageryProviders = [imageryProvider2, imageryProvider3, imageryProvider4, imageryProvider5, imageryProvider6, imageryProvider7, imageryProvider8, imageryProvider9, imageryProvider10];
+        function changeTimeFormatter(layer, layer1, imageryProviders) {
+            if(typeof imageryProviders[n] === "undefined") {
+                //When there are no members in the array, set this callback function to empty
+                viewer.animation.viewModel.timeFormatter = function(){};
+                return ;
+            }
+            //Remove the invisible layers
+            imageryLayers.remove(layer);
+
+            //Point the layer to next layer, and set it to transparent
+            layer = imageryLayers.addImageryProvider(imageryProviders[n++]);
+            layer.alpha = 0;
+
+            layer1.alpha = 1;
+
+            //Change this callback function and execute the next gradual change
+            viewer.animation.viewModel.timeFormatter = function(date, viewModel) {
+                if(layer1.alpha >= 0 ) {
+                    layer1.alpha -= 0.005;
+                    layer.alpha += 0.005;
+                }
+                if(layer1.alpha < 0) {
+                    //Execute the next gradual change
+                    changeTimeFormatter(layer1, layer, imageryProviders);
+                }
+            }
+        }
+
+        viewer.flyTo(layer);
+    }
+
+</script>
+</body>
+</html>

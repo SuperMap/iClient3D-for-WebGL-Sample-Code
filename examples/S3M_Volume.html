@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Volume Rendering</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/config.js"></script>
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+    <script src="js/bootstrap-select.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;background-color: #000000;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+<div id="toolbar" style="position : absolute;left : 10px; top : 10px;display : none;">
+    <b style="color: #ffffff">Color Table</b>
+    <select id="colorTable"  class="selectpicker">
+        <option value="1" data-content="<span class='label band4'>&nbsp</span>">&nbsp</option>
+        <option value="2" data-content="<span class='label band2'>&nbsp</span>">&nbsp</option>
+        <option value="3" data-content="<span class='label band3'>&nbsp</span>">&nbsp</option>
+        <option value="4" data-content="<span class='label band1'>&nbsp</span>">&nbsp</option>
+        <option value="5" data-content="<span class='label band5'>&nbsp</span>">&nbsp</option>
+    </select>
+</div>
+<script type="text/javascript">
+    function onload(Cesium) {
+        var viewer = new Cesium.Viewer('cesiumContainer');
+        var scene = viewer.scene;
+        var widget = viewer.cesiumWidget;
+        $('#toolbar').show();
+        $('#loadingbar').remove();
+        var url="http://www.supermapol.com/realspace/services/3D-volume_new/rest/realspace/datas/volume/config";
+        try{
+            var promise = scene.addS3MTilesLayerByScp(url,{name : 't8h'});
+            Cesium.when(promise,function(layer){
+                scene.camera.setView({
+                    destination : Cesium.Cartesian3.fromDegrees(113.33933,23.154572 ,100),
+                    orientation : {
+                        heading: 0.1408478555804642,
+                        pitch:-0.26219319592543444,
+                        roll:6.283185307177028
+                    }
+                });
+                var hyp = new Cesium.HypsometricSetting();
+                var colorTable = new Cesium.ColorTable();
+                var height = layer._fMinValue;
+
+                var value = $("#colorTable").find("option:selected")[0].value;
+                setColorTable(colorTable, value);
+                hyp.ColorTable = colorTable;
+                hyp.DisplayMode = Cesium.HypsometricSettingEnum.DisplayMode.FACE;
+                hyp.Opacity = 0.618;
+
+                hyp.LineInterval = 100.0;
+
+                hyp.ColorTableMaxKey = layer._fMaxValue;
+                hyp.ColorTableMinKey = layer._fMinValue;
+
+                hyp.MaxVisibleValue = layer._fMaxValue;//-81;
+                hyp.MinVisibleValue = layer._fMinValue;//-82;
+
+                // Set the hypsometric setting 
+                layer.hypsometricSetting = {
+                    hypsometricSetting : hyp,
+                    analysisMode : Cesium.HypsometricSettingEnum.AnalysisRegionMode.ARM_ALL
+                };
+
+                function setColorTable(colorTable, key) {
+                    switch (key) {
+                        case "1":
+                            colorTable.insert(layer._fMaxValue, new Cesium.Color(255/255, 0/255, 0/255));
+                            colorTable.insert(2*(layer._fMinValue+layer._fMaxValue)/3, new Cesium.Color(221/255, 224/255, 7/255));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/2, new Cesium.Color(20/255, 187/255, 18/255));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/4, new Cesium.Color(0, 161/255, 1));
+                            colorTable.insert(layer._fMinValue, new Cesium.Color(9/255, 9/255, 255/255));
+                            break;
+                        case "2":
+                            colorTable.insert(layer._fMaxValue, new Cesium.Color(162/255, 251/255, 194/255));
+                            colorTable.insert(2*(layer._fMinValue+layer._fMaxValue)/3, new Cesium.Color(180/255, 200/255, 170/255));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/2, new Cesium.Color(200/255, 160/255, 130/255));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/4, new Cesium.Color(225/255, 130/255, 130/255));
+                            colorTable.insert(layer._fMinValue, new Cesium.Color(1, 103/255, 103/255));
+                            break;
+                        case "3":
+                            colorTable.insert(layer._fMaxValue, new Cesium.Color(230/255, 198/255, 1));
+                            colorTable.insert(2*(layer._fMinValue+layer._fMaxValue)/3, new Cesium.Color(210/255, 150/255, 1));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/2, new Cesium.Color(190/255, 100/255, 1));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/4, new Cesium.Color(165, 50/255, 1));
+                            colorTable.insert(layer._fMinValue, new Cesium.Color(157/255, 0, 1));
+                            break;
+                        case "4":
+                            colorTable.insert(layer._fMaxValue, new Cesium.Color(0, 39/255, 148/255));
+                            colorTable.insert(2*(layer._fMinValue+layer._fMaxValue)/3, new Cesium.Color(0, 39/255, 148/255));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/2, new Cesium.Color(70/255, 116/255, 200/255));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/4, new Cesium.Color(149/255, 232/255, 249/255));
+                            colorTable.insert(layer._fMinValue, new Cesium.Color(149/255, 232/255, 249/255));
+                            break;
+                        case "5":
+                            colorTable.insert(layer._fMaxValue, new Cesium.Color(186/255, 1, 190/255));
+                            colorTable.insert(2*(layer._fMinValue+layer._fMaxValue)/3, new Cesium.Color(186/255, 1, 180/255));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/2, new Cesium.Color(106/255, 255/255, 170/255));
+                            colorTable.insert((layer._fMinValue+layer._fMaxValue)/4, new Cesium.Color(26/255, 255/255, 160/255));
+                            colorTable.insert(layer._fMinValue, new Cesium.Color(26/255, 255/255, 156/255));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                $('#colorTable').change(function () {
+                    var layer = scene.layers.find("t8h");
+                    var value = $(this).find("option:selected")[0].value;
+                    var hyp = new Cesium.HypsometricSetting();
+                    hyp.MaxVisibleValue = 0;
+                    var color = new Cesium.ColorTable();
+                    var height = layer._fMinValue;
+                    setColorTable(color, value);
+                    hyp.ColorTable = color;
+                    hyp.DisplayMode = Cesium.HypsometricSettingEnum.DisplayMode.FACE;
+                    hyp.Opacity = 0.618;
+                    hyp.LineInterval = 100.0;
+                    hyp.ColorTableMaxKey = layer._fMaxValue;
+                    hyp.ColorTableMinKey = layer._fMinValue;
+                    hyp.MaxVisibleValue = layer._fMaxValue;//-81;
+                    hyp.MinVisibleValue = layer._fMinValue;//-82;
+
+                    layer.hypsometricSetting = {
+                        hypsometricSetting : hyp,
+                        analysisMode : Cesium.HypsometricSettingEnum.AnalysisRegionMode.ARM_ALL
+                    }
+                });
+
+            },function(e){
+                if (widget._showRenderLoopErrors) {
+                    var title = 'Failed to load SCP, please check the network connection status or the URL';
+                    widget.showErrorPanel(title, undefined, e);
+                }
+            });
+        }
+        catch(e){
+            if (widget._showRenderLoopErrors) {
+                var title = 'An error occurred while rendering.  Rendering has stopped';
+                widget.showErrorPanel(title, undefined, e);
+            }
+        }
+    }
+</script>
+</body>
+</html>

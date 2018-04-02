@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+     <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <title>Load Terrain Data</title>
+        <link href='../css/bootstrap.min.css' rel='stylesheet' />
+        <link href='../css/bootstrap-responsive.min.css' rel='stylesheet' />
+         <link href='../css/sm-extend.css' rel='stylesheet' />
+        <link href='../css/sm-doc.css' rel='stylesheet' />
+        <!--[if lte IE 8]>
+        <style>
+        .container .hero-unit{
+                padding: 60px 400px 60px 60px;
+                background-image:url(./examples/images/home_banner2.png);
+                background-repeat:no-repeat;
+                background-position-x:right;
+                background-position-y:bottom;
+            }
+        </style>
+        <![endif]--> <!-- <style>
+			.back2top-icon-real{
+				background:transparent url(a.png) no-repeat fixed bottom right;
+				width:57px;
+				height:57px;
+			}
+		</style> -->
+        <style type="text/css">
+<!--
+.STYLE2 {color: #FF8080}
+-->
+        </style>
+</head>
+    <body data-spy="scroll" data-target=".subnav" data-offset="50">
+        <!--导航条-->
+        <div class="navbar navbar-fixed-top" id="navbar">
+        </div>
+        <br>
+        <div id='container' class='container'>
+            <div class='page-header'>
+                <h1>Manual to Load Terrain Data</h1>
+                <hr/>
+                <h2>Overview<a name="Summary"> </a></h2>
+				<p>SuperMap supports generating 3D terrain cache for grid dataset to optimize the display of terrain data at the client side with tiles. SuperMap iClient3D for WebGL can access 3D services publishied by SuperMap iServer to load terrain data.</p>
+				<p>This document explains how WebGL Client load and browse terrain data.</p>
+				<ol>
+					<ol>
+					  <li><a href="#01CreatCache">Build Cache Data</a></li>
+					  <li><a href="#02Publish3DService">Publish 3D Services</a></li>
+					  <li><a href="#03BrowseTerrain">Load Terrain Data at Client Side</a></li>
+				  </ol>
+				</ol>
+				
+				<h2>Operations<a name="OperationFlow"></a></h2>
+				<p>Here is an example to illustrate the steps.</p>
+				<h3><a name="01CreatCache"></a>1. Build Cache Data</h3>
+				<h4>Introduction</h4><br>
+				<p>SuperMap iDesktop can generate 3D terrain cache .sct based on terrain data.</p>
+				<h4>Basic Steps</h4><br>
+				<p>(1) Open SuperMap  iDesktop, Workspace Manager&gt;Datasource&gt;Open File Datasource.</p>
+		  	  <div class="pageImage"><img src="../images/TopicDOC/OpenDatasource.png" width="267" height="226"><br><br> Fig. Opening a datasource</div>
+				<p>2 Select the terrain dataset to generate cache, right click to display the context menu, click Create Scene Cache. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_CreatSceneCache.png" width="305" height="411"><br><br> Fig. Create Scene Cache</div>
+				<p>3 In the dialog box that displays, as shown below:</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_CreatSceneCacheDialog.png" width="688" height="636"><br><br> Fig. Create Scene Cache dialog box</div>
+				
+				<p>4 In the dataset list are datasets to generate cache. You can click Add Dataset or Delete to manage datasets for generating cache. Following suggestions are provided for parameter settings.</p>
+				<ul>
+				  <ul style="list-style-type:disc;">
+				    <li>Cache Type: TIN.</li>
+				    <li>Tiling Type: Global.</li>
+			      </ul>
+				</ul>
+				<p>5 For Parameter Settings, please follow the suggestions below:</p>
+				<ul>
+				  <ul style="list-style-type:disc;">
+				    <li>Cache Name: Input cache name, with default being dataset name@datasource name.</li>
+			        <li>Cache Path: The output path of the cache.</li>
+				    <li>Start Layer: Gets or sets the count of the cache level. </li>
+				    <li>End Layer: Gets or sets the end level in the building of the cache. </li>
+				  </ul>
+				</ul>
+				<p>6 Keep Cache Extent and Scales by default. Click OK to generate cache. </p>
+				<h4>Results</h4><br>
+				<p>After generating cache, open the Terrain folder, you will see a file named info.sct, which is the configuration file for the terrain data cache. Folders named with numbers store cache data of different levels.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_SceneCacheResult.png" width="460" height="222"><br><br> Fig. Results</div>
+				<h3><a name="02Publish3DService"></a>2. Publish 3D Services</h3>
+				<h4>Introduction</h4><br>
+				<p>After creating cache, we will see how to publish the terrain cache as 3D services to allow WebGL Client to load terrain data.</p>
+				<h4>Basic Steps</h4><br>
+				<p>1 Open SuperMap  iDesktop, Workspace Manager&gt;Scene&gt;New Spherical Scene. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadOblique_NewScene.png"><br><br> Fig. New spherical scene</div>
+				<p>2 Layer Manager&gt;Terrain Layers&gt;Add Terrain Cache Layer, select the *.sct configuration file generated. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_AddTerrainCache.png" width="309" height="180"><br><br> Fig. Add terrain cache to scene</div>
+				<p>3 After adding terrain cache layer, save the scene and workspace.</p>
+				<p>4 Start iserver via 4 <strong><strong>startup.bat</strong> under %SuperMap iServer_HOME%/bin.</strong></p>
+				<p>5 Start bowser, enter Web Manager via <a target="_blank" href="http://localhost:8090/iserver/manager"><u>http://localhost:8090/iserver/manager</u></a>. Quickly publish a service at Home Page.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/PublishQuickly.png"><br> Fig. Quickly publish one or multiple services</div>
+				<p>6 In the Quickly publish service--Select datasource page, select the Workspace as the Data source, and click Next.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/DataSource.png"><br> Fig. Select the Workspace as the Data source</div>
+				<p>7 In the Quickly publish service--Configure data page, click Remote Browse to select the workspace, click Next.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_SelectWorkspace.png" width="728" height="278"><br><br> Fig. Select the workspace</div>
+				<p>8 In the Quickly publish service--Select service type page,Select REST 3D Service, click Next.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/Select3DService.png"><br><br> Fig. Select REST 3D Service</div>
+				<p>When finished, click Finish and Close.</p>
+				
+				<h4>Results</h4><br>
+				<p>The service displays in the service list <a target="_blank" href="http://localhost:8090/iserver/services">http://localhost:8090/iserver/services</a>, as shown below.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_PublishServiceResult.png" width="248" height="281"><br><br> Fig. The published service</div>
+				<h3><a name="03BrowseTerrain"></a>3. Load Terrain Data at Client Side</h3>
+				<h4>Introduction</h4><br>
+				<p>After publishing service, WebGL Client can load the image data.</p>
+				<p class="STYLE2">Please place WebGL package at %SuperMap iServer_HOME%/webapps.</p>
+				<h4>Basic Steps</h4><br>
+				<p>1 Get the url of the 3D data.</p>
+				<ul>
+					<ul style="list-style-type:disc;">
+					  <li>Enter <a target="_blank" href="http://localhost:8090/iserver/services"><u>http://localhost:8090/iserver/services</u></a> and find the published 3D service.</li>
+					  <li>Enter root directory page, click realspace.</li>
+					  <li>Enter 3D page, click datas.</li>
+					  <li>Enter datas page, click links below.</li>
+					  <li>Enter data page, copy the address of the url. </li>
+					</ul>
+				</ul>
+				
+<div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_CopyConfig_en.png" width="758" height="64"><br><br> Fig. Copy url address </div>
+				<p>2 Enter the path of WebGL product package in %SuperMap iServer_HOME%/webapps, in the examples folder, open S3MTiles.html with text editor, and modify the following content.</p>
+				
+              <div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_ModifySample.png" width="652" height="436"><br><br> Fig. Change parameter </div>
+
+                <p>3 Open the <strong>terrainAndImagery</strong>.html page, that is, enter the url <u>http://localhost:8090/%WebGL Package%/examples/terrainAndImagery.html</u> in the browser.</p>
+			  <h4>Results</h4><br>
+				<p>After you open the page, the camera flies to the position of the terrain data, as shown below.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_BrowseResult.png" ><br><br> Fig. Terrain loaded at WebGL Client</div>
+			  <p>Note: For more information about how to load image data, please refer to <strong><a href="LoadImagery_OperateTopic.html" target="_blank"><strong>Load Image Data</strong></a></strong>. </p>
+</div>
+		<!--法律申明-->
+		<div class='footer'>
+		<p>Copyright&amp;copy; 2000-2017 SuperMap Software Co., Ltd.</p>
+		</div>
+	</div>
+
+        <script src='../js/jquery.js'></script>
+        <script src='../js/bootstrap.js'></script>
+        <script>
+			window.onstop = function(){
+				alert(1);
+			}
+		</script>
+        <script src="../js/navbar.js"></script>
+    </body>
+</html>

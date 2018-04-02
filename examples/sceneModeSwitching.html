@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Scene Mode Switching</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/bootstrap-select.min.js"></script>
+    <script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+    <script src="./js/config.js"></script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;background-color: #000000;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+<div id="toolbar" style="position: absolute;left: 5px;top: 5px;display: none;">
+    <select id="imageryOptions" class="selectpicker show-tick form-control">
+        <option disabled selected value>--Choose the type of services--</option>
+        <option value="WGS">Custom image&terrain </option>
+        <option value="MEC">oblique photograph</option>
+    </select>
+</div>
+<script>
+    function onload(Cesium) {
+        //Initialize viewer setting
+        var viewer = new Cesium.Viewer('cesiumContainer',{
+            terrainProvider : new Cesium.CesiumTerrainProvider({
+                url : "http://www.supermapol.com/realspace/services/3D-2DZF/rest/realspace/datas/srtm@zhufeng_p",
+                isSct : true
+            }),
+            sceneModePicker:true,
+            navigation:false,
+            imageryProvider : new Cesium.SingleTileImageryProvider({
+                url : './images/worldimage.jpg'
+            })
+        });
+        
+        viewer.scene.mode = Cesium.SceneMode.COLUMBUS_VIEW;
+
+        var imageryLayers = viewer.imageryLayers;
+        // Create SuperMapImageryProvider through service url
+        var provider_wgs = new Cesium.SuperMapImageryProvider({
+            url : "http://www.supermapol.com/realspace/services/map-zhufeng/rest/maps/pol1_P_1%40zhufeng"
+        });
+
+        var imagery_wgs = imageryLayers.addImageryProvider(provider_wgs);
+
+        var scene = viewer.scene;
+        var promise = scene.addS3MTilesLayerByScp(URL_CONFIG.SCP_JINJIANG,{
+                name : 'jinjiang'
+            });
+        Cesium.when(provider_wgs.readyPromise, function (layer) {
+            if(!scene.pickPositionSupported){
+                alert('DOnot support depth texture, attribute query is not avaliable!');
+            }
+
+             viewer.camera.setView({
+                    destination : provider_wgs._rectangle
+            });
+        });
+        //add drop-down menu, click to change map service
+        $('#imageryOptions').change(function(){
+            var value = $(this).val();
+            if(value == 'WGS'){
+                viewer.camera.setView({
+                    destination : provider_wgs._rectangle
+                });
+            }
+            else if(value == 'MEC'){
+                Cesium.when(promise,function(layer){
+                //set camera view
+                scene.camera.setView({
+                    destination : Cesium.Cartesian3.fromDegrees(118.54909017414182,24.80259473610606,105.40531821331771),
+                    orientation : {
+                        heading : 5.154573786584606,
+                        pitch : -0.14229615865957967,
+                        roll :3.2294167340296553e-12
+                    }
+                });
+                });
+            }
+        });
+        $('#toolbar').show();
+        $('#loadingbar').remove();
+
+       
+}
+</script>
+</body>
+</html>

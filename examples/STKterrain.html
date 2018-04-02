@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>STK Terrain</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/bootstrap-select.min.js"></script>
+    <script src="./js/require.min.js" data-main="js/main"></script>
+    <script src="./js/config.js"></script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;background-color: #000000;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+<div id="toolbar" style="position: absolute;left: 5px;top: 5px;display: none;">
+    <select id="fillOptions" class="selectpicker show-tick form-control">
+        <option disabled selected value>--Choose Fill Mode--</option>
+        <option value="None">No Color</option>
+        <option value="Line">Display Isoline</option>
+        <option value="Region">Display Isoregion</option>
+        <option value="Line_Region">Display Isoline and Isoregion</option>
+    </select>
+</div>
+<script>
+function onload(Cesium) {
+    var viewer = new Cesium.Viewer('cesiumContainer',{
+        //add STK World Terrain service
+        terrainProvider : new Cesium.CesiumTerrainProvider({
+            url : URL_CONFIG.STK,
+            requestWaterMask : true,
+            requestVertexNormals : true
+        }),
+        //add BingMaps imagery service
+        imageryProvider :  new Cesium.BingMapsImageryProvider({
+            key : "AjQhMyw76oicHqFz7cUc3qTEy3M2fC2YIbcHjqgyMPuQprNVBr3SsvVdOfmlVc0v",
+            url : URL_CONFIG.BINGMAP
+        })
+    });
+    //set camera position
+    viewer.scene.camera.setView({
+        destination : new Cesium.Cartesian3.fromDegrees(86.7811,27.6564,5358.7096),
+        orientation : {
+            heading : 0.34555839949062594,
+            pitch : -0.1422794351856307,
+            roll : 0.0009471063581933947
+        }
+    });
+
+    //create a hypsometricSetting instance
+    var hyp = new Cesium.HypsometricSetting();
+    //Set the display mode 
+    hyp.DisplayMode = Cesium.HypsometricSettingEnum.DisplayMode.LINE;
+    hyp._lineColor = new Cesium.Color(1.0, 0.0, 0.0, 1.0);
+    hyp.LineInterval = 200.0;
+    hyp.MaxVisibleValue = 9000;
+    hyp.MinVisibleValue = 0;
+    hyp.ColorTableMinKey = 1;
+    hyp.ColorTableMaxKey = 9000;
+    var colorTable = new Cesium.ColorTable();
+    var height=0;
+    //insert a random color per 100m
+    for(var i= 0;i<90;i++){
+        height+=100;
+        colorTable.insert(height,getRandomColor());
+    }
+
+    function getRandomColor(){
+        return new Cesium.Color(0,Math.random(),Math.random());
+    }
+    hyp.ColorTable = colorTable;
+    hyp.Opacity = 0.8;
+
+    //change the display mode
+    $('#fillOptions').change(function(){
+        var value = $(this).val();
+        switch (value){
+            case 'None' : viewer.scene.globe.HypsometricSetting = undefined;break;
+            case 'Line' : {
+                hyp.DisplayMode = Cesium.HypsometricSettingEnum.DisplayMode.LINE;
+                viewer.scene.globe.HypsometricSetting = {
+                    hypsometricSetting : hyp,
+                    analysisMode : Cesium.HypsometricSettingEnum.AnalysisRegionMode.ARM_ALL
+                };
+            }
+                break;
+            case 'Region' : {
+                hyp.DisplayMode = Cesium.HypsometricSettingEnum.DisplayMode.FACE;
+                viewer.scene.globe.HypsometricSetting = {
+                    hypsometricSetting : hyp,
+                    analysisMode : Cesium.HypsometricSettingEnum.AnalysisRegionMode.ARM_ALL
+                };
+            }
+                break;
+            case 'Line_Region' : {
+                hyp.DisplayMode = Cesium.HypsometricSettingEnum.DisplayMode.FACE_AND_LINE;
+                viewer.scene.globe.HypsometricSetting = {
+                    hypsometricSetting : hyp,
+                    analysisMode : Cesium.HypsometricSettingEnum.AnalysisRegionMode.ARM_ALL
+                };
+            }
+                break;
+            default : break;
+        }
+
+    });
+    $('#toolbar').show();
+    $('#loadingbar').remove();
+}
+</script>
+</body>
+</html>

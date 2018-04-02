@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+     <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <title>Load glTF Models</title>
+        <link href='../css/bootstrap.min.css' rel='stylesheet' />
+        <link href='../css/bootstrap-responsive.min.css' rel='stylesheet' />
+         <link href='../css/sm-extend.css' rel='stylesheet' />
+        <link href='../css/sm-doc.css' rel='stylesheet' />
+        <!--[if lte IE 8]>
+        <style>
+        .container .hero-unit{
+                padding: 60px 400px 60px 60px;
+                background-image:url(./examples/images/home_banner2.png);
+                background-repeat:no-repeat;
+                background-position-x:right;
+                background-position-y:bottom;
+            }
+        </style>
+        <![endif]--> <!-- <style>
+			.back2top-icon-real{
+				background:transparent url(a.png) no-repeat fixed bottom right;
+				width:57px;
+				height:57px;
+			}
+		</style> -->
+     </head>
+    <body data-spy="scroll" data-target=".subnav" data-offset="50">
+        <!--导航条-->
+        <div class="navbar navbar-fixed-top" id="navbar">
+        </div>
+        <br>
+        <div id='container' class='container'>
+          <div class='page-header'>
+                <h1>Instructions for Loading glTF</h1>
+                <hr/>
+                <h2>Overview<a name="Summary"> </a></h2>
+				<p>In real projects, for certain cases, we may need to load 3D models with animations using SuperMap iClient3D for WebGL. The variety of 3D modeling software becomes a challenge because they produces models with different formats. Also the varied models with complex info including background, lighting, cameras, etc compromise the efficiency of loading and performance of displaying.</p>
+				<p>glTF™ 1.0 (GL Transmission Format) is a royalty-free specification for the efficient transmission and loading of 3D scenes and models by WebGL, OpenGL ES, and OpenGL applications. </p>
+				<p>To import 3D models from a certain 3D modeling software to your SuperMap iClient3D for WebGL application, you will follow the three main steps: </p>
+				<ol>
+					<ol>
+					  <li><a href="#01ExportDAE">Export as DAE Model</a></li>
+					  <li><a href="#02DAE2GLTF">Convert DAE to GLTF</a></li>
+					  <li><a href="#03BrowseGLTF">Load Model Data</a></li>
+				  </ol>
+				</ol>
+				
+				<h2>Instructions<a name="OperationFlow"></a></h2>
+				<p>Here we demonstrate the steps by loading a .max model with animation.</p>
+				<h3><a name="01ExportDAE"></a>Export as DAE Model</h3>
+				<h4>Introduction</h4><br>
+				<p>In this step, you will use 3ds  MAX software to export your *.max model to DAE format, which is a 3D exchange format. </p>
+				<p>When you export the model in 3ds MAX, remember to use &rdquo;<strong>OpenCOLLADA (*.DAE)</strong>&rdquo; instead of &ldquo;Autodesk  Collada (*.DAE)&ldquo; because Autodesk  Collada (*.DAE) might cause a failure in exporting model textures. You might need to download a DAE export plugin for 3ds MAX.</p>
+				<p>The plugin we use here in this sample is: &ldquo;<strong>COLLADAMax.dle</strong>&ldquo;. </p>
+				<h4>Basic Steps</h4><br>
+				<p>(1). Install the plugin: after you download the plugin, save it in the &quot;plugins&quot; folder of the 3ds MAX directory. In this sample, the path is: &ldquo;<u>C:\Program  Files\Autodesk\3ds Max 2014\plugins</u>&rdquo;, as shown below.</p>
+		  	  <div class="pageImage"><img src="../images/TopicDOC/LoadGltf_ColladaMaxPlugin.png" width="495" height="255"><br> Figure: Path for Saving Plugin</div>
+				<p>(2). Restart 3ds  MAX, open your 3D model and select &ldquo;<strong>|Export</strong>&rdquo;. Specify the path and name and the save type as &ldquo;<strong>OpenCOLLADA(*.DAE)</strong>&ldquo;, as shown below:</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadGltf_ExportType.png" width="351" height="152"><br> Figure: Type to Save</div>
+				<p>(3). Click &quot;Save&quot;, and in the dialog box of &ldquo;<strong>OpenCOLLADA Export</strong>&rdquo;, select &rdquo;<strong>copy Images</strong>&rdquo; and click OK. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadGltf_SelectCopyImages.png" width="413" height="277"><br><br> Figure:  &ldquo;OpenCOLLADA Export&rdquo;  Dialog Box</div>
+				
+				<h4>Result</h4><br>
+				<p>The DAE model exported will be saved in the specified path together with a folder titled &quot;images&quot; where the texture images are saved.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadGltf_ExportDAEResult.png" width="673" height="199"><br> Figure: DAE Model Exported</div>
+				<h3><a name="02DAE2GLTF"></a>2. Convert DAE to GLTF</h3>
+				<h4>Introduction</h4><br>
+				<p>In this step, we will use the conversion tool colladaTogltf.exe to convert the DAE model to glTF format. You can get the conversion tool colladaTogltf.exe here: <a href="https://github.com/KhronosGroup/glTF/wiki/Converter-builds" target="_blank"><u>https://github.com/KhronosGroup/glTF/wiki/Converter-builds</u></a> </p>
+				<p>You don't need to install the conversion tool you download. Just following the steps below to operate: </p>
+				<h4>Basic Steps</h4><br>
+				<p>(1) Press Windows+R to open the Run dialog, and input &quot;cmd&quot; to open the command line dialog box.  </p>
+				<p>(2) Input the command line to enter the folder where colladaTogltf.exe is: &ldquo;<strong>cd %exePath%</strong>&rdquo;.</p>
+				<p>(3) Enter the command line: <strong>collada2gltf.exe &ndash;f %daePath% -e</strong></p>
+				 
+                <ul>
+					 <ul style="list-style-type:disc;">
+                      <li><strong>%daePath%</strong> is the full path for the DAE model. Here in this sample, the path is: &ldquo; E:\models\models\diaota\diaota.DAE &rdquo;;</li>
+                      <li><strong>&quot;-e&quot; <B><B><B><B><B>means a gltf file will be converted to, with the model geometries and texture info. </B></B></B></B></B></strong></li>
+                    </ul>
+			    </ul>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadGltf_CMD.png" width="677" height="442"><br> Figure: Command Line to Convert DAE to glTF</div>
+
+			  <p>(4) Press Enter to execute.</p>
+				<h4>Result</h4><br>
+				<p>The glTF model generated will be saved in the same path with the DAE model. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadGltf_2GltfResult.png" width="706" height="244"><br> Figure: glTF Model Converted to</div>
+			    <p>Note that the models of glTF format have smaller sizes and enhance the speed of data transmission over Web. </p>
+				<h3><a name="03BrowseGLTF"></a>3. Load Model Data</h3>
+        <h4>Introduction</h4><br>
+				<p>SuperMap iClient3D for WebGL uses a KML file to load *.gltf models. Here, the &ldquo;<strong>KML_crane.html</strong>&rdquo; sample loads the models from the path saved in the &quot;<strong>crane.kml</strong>&rdquo; file. This step shows how to modify the model path in the KML file. </p>
+				<h4>Basic Steps</h4><br>
+				<p>(1) Copy the glTF model data to the resource folder on the server. The path is: <strong>%SuperMap iServer_HOME%/webapps/</strong><strong>%WebGL Package% /examples/SampleData/models</strong></p>
+				<p>(2) In the path <strong>%SuperMap iServer_HOME%/webapps</strong>, in the folder &ldquo;<strong>examples/SampleData</strong>&rdquo;, open the &ldquo;<strong>crane.kml</strong>&ldquo; file in Notepad. Modify the model path in the KML file. </p>
+				
+              <div class="pageImage"><img src="../images/TopicDOC/LoadGltf_ModifyKML.png" width="798" height="421"><br> Figure: Modify Model Path </div>
+
+                <p>(3) Open the &quot;<strong>KML_crane.html</strong>&quot; page in the browser by typing: <u> http://localhost:8090/<strong>%WebGL Package%</strong>/examples/ KML_crane.htm</u></p>
+			  <h4>Result</h4><br>
+				<p>Open the web page, and the camera will fly to the terrain data as shown bdlow:</p>
+			  <div class="pageImage"><img src="../images/TopicDOC/LoadGltf_BrowseGltf.png" style="width:90%"><br> Figure: The Result 3D Model Loaded </div>
+			  </div>
+		<!--法律申明-->
+		<div class='footer'>
+		<p>Copyright&amp;copy; 2000-2017 SuperMap Software Co., Ltd.</p>
+		</div>
+	</div>
+
+        <script src='../js/jquery.js'></script>
+        <script src='../js/bootstrap.js'></script>
+        <script>
+			window.onstop = function(){
+				alert(1);
+			}
+		</script>
+        <script src="../js/navbar.js"></script>
+    </body>
+</html>

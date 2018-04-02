@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+     <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <title>Load Oblique Image Model</title>
+        <link href='../css/bootstrap.min.css' rel='stylesheet' />
+        <link href='../css/bootstrap-responsive.min.css' rel='stylesheet' />
+         <link href='../css/sm-extend.css' rel='stylesheet' />
+        <link href='../css/sm-doc.css' rel='stylesheet' />
+        <!--[if lte IE 8]>
+        <style>
+        .container .hero-unit{
+                padding: 60px 400px 60px 60px;
+                background-image:url(./examples/images/home_banner2.png);
+                background-repeat:no-repeat;
+                background-position-x:right;
+                background-position-y:bottom;
+            }
+        </style>
+        <![endif]--> <!-- <style>
+			.back2top-icon-real{
+				background:transparent url(a.png) no-repeat fixed bottom right;
+				width:57px;
+				height:57px;
+			}
+		</style> -->
+        <style type="text/css">
+<!--
+.STYLE2 {color: #FF8080}
+-->
+        </style>
+</head>
+    <body data-spy="scroll" data-target=".subnav" data-offset="50">
+        <!--导航条-->
+        <div class="navbar navbar-fixed-top" id="navbar">
+        </div>
+        <br>
+        <div id='container' class='container'>
+            <div class='page-header'>
+                <h1>Manual to Load Oblique Image Model</h1>
+                <hr/>
+                <h2>Overview<a name="Summary"> </a></h2>
+				<p>Oblique image model is becoming an important source of 3D GIS because it is precision, efficient, real, and cost effective. SuperMap GIS products support oblique image model. SuperMap iClient3D for WebGL can directly load oblique image model publishied by the server. </p>
+				<p>This document explains how WebGL Client load and browse oblique image data. </p>
+				<ol>
+					<ol>
+					  <li><a href="#01CreatSCP">Generate Configuration File</a></li>
+					  <li><a href="#02Publish3DService">Publish 3D Services</a></li>
+					  <li><a href="#03BrowseOblique">Browse Oblique Image Model at Client Side</a></li>
+				  </ol>
+			  </ol>
+				<h2>Operations<a name="OperationFlow"></a></h2>
+				<p>Here is an example to illustrate the steps. </p>
+				<h3><a name="01CreatSCP"></a>1. Generate Configuration File</h3>
+				<h4>Introduction</h4><br>
+				<p>You can generate a .scp format configuration file based on .osgb files from multiple folders. The configuration file records the relative paths, names, insert points, coordinate information, etc. of the oblique image model data. </p>
+				<p>If you already have the .scp format configuration file, you can skip this step to <a href="#02Publish3DService">2.Publish 3D Services</a>. </p>
+				<h4>Basic Steps</h4><br>
+				<p>1 Open SuperMap iDesktop, go to Oblique Photogrametry &gt; Create configure file. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadOblique_ClickCreatSCP.png" width="447" height="137"><br> <br> Fig. Generate scp file</div>
+				<p>2 In the dialog box that displays, as shown below: </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadOblique_CreatSCPDialog.png" width="624" height="339"><br> <br> Fig. Generate scp file dialog box</div>
+				<p>3 Select the folder of OSGB models for Source Path</p>
+				<p>4 For Result Settings, please follow the suggestions below: </p>
+			
+                  <ul>
+					<ul style="list-style-type:disc;">
+                      <li>Target Path: The path to save the configuration file </li>
+                      <li>Target File: The name of configuration file. </li>
+                    </ul>
+                  </ul>
+			
+				<p>5 Set X, Y, Z for Reference Point. The default is (0, 0, 0). </p>
+				<ul>
+				  <ul style="list-style-type:disc;">
+				    <li>Reference Point is the center of the oblique image mode. X represents longitude, Y represents latitude, Z represents elevation. </li>
+		          </ul>
+				</ul>
+				<p>6 Check Projection Settings, set projection for the .scp file.<u> </u></p>
+				<p>7 After settings, click OK to generate the configuration file. </p>
+				<h4>Results</h4><br>
+				<p align="left">A new file with the extension of .scp will be generated at the specified target path, as shown below.</p>
+				
+				<div class="pageImage"><img src="../images/TopicDOC/LoadOblique_CreatSCPResult.png" width="599" height="279"><br> <br> Fig. Result for generating configuration file </div>
+				<h3><a name="02Publish3DService"></a>2. Publish 3D Services</h3>
+				<h4>Introduction</h4><br>
+				<p>When you get the configuration file, you can publish the oblique image model. </p>
+				<h4>Basic Steps</h4><br>
+				<p>For details, please refer to <a href="LoadObliqueModel_OperateTopic.html" target="_blank">Load Oblique Image Model with WebGL</a>.</p>
+				<h4>Results</h4><br>
+				<p>1 Open SuperMap  iDesktop, Workspace Manager&gt;Scene&gt;New Spherical Scene. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/NewScene.png" width="286" height="280"><br><br> Fig. New spherical scene </div>
+			  <p>2 Layer Manager&gt;General Layers&gt;Add OSGB Cache Layer, select the *.scp configuration file generated. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/AddOSGBLayer.png" width="280" height="247"><br><br>  Fig. Add OSGB cache to scene </div>
+			  <p>3 After loading data, save scene and workspace. </p>
+				<p>4 Start iserver via 4 <strong><strong>startup.bat</strong> under %SuperMap iServer_HOME%/bin.</strong> </p>
+				<p>5 Start bowser, enter Web Manager via <a href="http://localhost:8090/iserver/manager">http://localhost:8090/iserver/manager</a>. Quickly publish a service at Home Page. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/PublishQuickly.png" width="393" height="362"><br><br>  Fig. Quickly publish one or multiple services </div>
+			  <p>6 In the Quickly publish service--Select datasource page, select the Workspace as the Data source, and click Next.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/DataSource.png" width="509" height="231"><br><br>  Fig. Select the Workspace as the Data source </div>
+			  <p>7 In the Quickly publish service--Configure data page, click Remote Browse to select the workspace, click Next. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadOblique_SelectWorkspace.png" width="723" height="277"><br><br>  Fig. Select the workspace </div>
+			  <p>8 In the Quickly publish service--Select service type page,Select REST 3D Service, click Next. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/Select3DService.png" width="516" height="269"><br><br>  Fig. Select REST 3D Service </div>
+			  <p>When finished, click Finish and Close.</p>
+			  <h4>Results</h4><br>
+			  <p>The service displays in the service list http://localhost:8090/iserver/services, as shown below.</p>
+			  <div class="pageImage"><img src="../images/TopicDOC/LoadOblique_PublishServiceResult.png" width="685" height="343"><br><br>  Fig. The published service</div>
+				<h3><a name="03BrowseOblique"></a>3 Browse Oblique Image Model at Client Side</h3>
+				<h4>Introduction</h4><br>
+				<p>After publishing service, WebGL Client can load the oblique image data.</p>
+				<p class="STYLE2">Please place WebGL package at %SuperMap iServer_HOME%/webapps.</p>
+				<h4>Basic Steps</h4><br>
+				<p>1 Get the url of the 3D data.</p>
+				<ul>
+                  <ul style="list-style-type:disc;">
+                    <li>Enter <a target="_blank" href="http://localhost:8090/iserver/services"><u>http://localhost:8090/iserver/services</u></a> and find the published 3D service.</li>
+                    <li>Enter root directory page, click realspace.</li>
+                    <li>Enter 3D page, click datas.</li>
+                    <li>Enter datas page, click Config. </li>
+                    <li>Enter data page, click Get 3D data configuration file to display the page as shown below, and copy the url address. </li>
+                  </ul>
+			  </ul>
+			  <div class="pageImage"><img src="../images/TopicDOC/LoadOblique_CopyConfig.png" width="878" height="129"><br><br>  Fig. Copy url address </div>
+				<p>2 Enter the path of WebGL product package in %SuperMap iServer_HOME%/webapps, in the examples folder, open S3MTiles.html with text editor, and modify the following content.</p>
+				
+              <div class="pageImage"><img src="../images/TopicDOC/LoadOblique_ModifySample.png" style="width:80%"><br><br>  Fig. Change parameter </div>
+
+
+                 
+                   <ul>
+					 <ul style="list-style-type:disc;">
+                      <li>Modify the <strong>scene.</strong> <strong>addS3MTilesLayerByScp ()</strong> function, and change the address to the copied address, and change the name.</li>
+                      <li>Modify the Cesium.Cartesian3.fromDegrees() function. The parameters of this function are longitude, latitude, elevation of the center point of the model. Please modify the insert point in the scp file, which is used to fly to the position of the oblique image model.</li>
+                    </ul>
+                  </ul>
+
+                <p>3 Open the <strong><strong>S3MTiles</strong>.html </strong>page, that is, enter the url <u>http://localhost:8090/%WebGL Package%/examples/S3MTiles.html</u> in the browser.</p>
+                <h4>Results</h4><br>
+				<p>After you open the page, the camera flies to the position of the oblique image data, as shown below. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadOblique_BrowseResult.png"><br><br>  Fig. Load oblique image data </div>
+</div>
+		<!--法律申明-->
+		<div class='footer'>
+		<p>Copyright&amp;copy; 2000-2017 SuperMap Software Co., Ltd.</p>
+		</div>
+	</div>
+
+        <script src='../js/jquery.js'></script>
+        <script src='../js/bootstrap.js'></script>
+        <script>
+			window.onstop = function(){
+				alert(1);
+			}
+		</script>
+        <script src="../js/navbar.js"></script>
+    </body>
+</html>

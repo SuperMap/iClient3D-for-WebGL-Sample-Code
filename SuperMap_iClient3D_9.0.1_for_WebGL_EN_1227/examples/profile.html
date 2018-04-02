@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Profile Analysis</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link href="./css/bootstrap-new.min.css" rel="stylesheet">
+    <link href="./css/pretty.css" rel="stylesheet">
+    <script src="./js/tooltip.js"></script>
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+	<script type="text/javascript" src="./js/require.min.js" data-main="js/main"></script>
+    <script src="./js/config.js"></script>
+
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;background-color: #000000;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id='loadingbar' class="spinner">
+    <div class="spinner-container container1">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+        <div class="circle1"></div>
+        <div class="circle2"></div>
+        <div class="circle3"></div>
+        <div class="circle4"></div>
+    </div>
+</div>
+<div id="toolbar" style="position : absolute; left : 10px; top : 10px; display : none;" >
+    <button type="button" id="chooseView" class="button black">Profile Analysis</button>
+</div>
+<canvas style="position : absolute; right : 2%; bottom : 2%;background-color:rgba(65, 65, 65, 0.5)" id="pro" height="0" width="0"></canvas>
+</body>
+<script type="text/javascript">
+    function onload(Cesium) {
+        var viewer = new Cesium.Viewer('cesiumContainer');
+        var scene = viewer.scene;
+        $("#toolbar").show();
+        $('#loadingbar').remove();
+        if(!scene.pickPositionSupported){
+            alert('Do not support depth textcure, thus mouse interactive drawing is not successful!');
+        }
+        //Create profile analysis object
+        var profile = new Cesium.Profile(scene);
+        var tooltip = createTooltip(document.body);
+        var widget = viewer.cesiumWidget;
+        try{
+            //add S3M layer
+            var ground1Promise = scene.addS3MTilesLayerByScp(URL_CONFIG.SCP_CBD_GROUND1,{name : 'ground1'});
+            var buildPromise = scene.addS3MTilesLayerByScp(URL_CONFIG.SCP_CBD_BUILD,{name : 'build'});
+            var promiseSet = [ground1Promise,buildPromise];
+            Cesium.when.all(promiseSet,function(layer){
+                //set camera view
+                scene.camera.setView({
+                    destination : Cesium.Cartesian3.fromDegrees(116.4473, 39.9011, 127),
+                    orientation : {
+                        heading : 0.2732,
+                        pitch : -0.1583,
+                        roll : 0
+                    }
+                });
+            },function(e){
+                if (widget._showRenderLoopErrors) {
+                    var title = 'Failed to load SCP, please check the network connection status or the URL';
+                    widget.showErrorPanel(title, undefined, e);
+                }
+            });
+        }
+        catch(e){
+            if (widget._showRenderLoopErrors) {
+                var title = 'An error occurred while rendering.  Rendering has stopped.';
+                widget.showErrorPanel(title, undefined, e);
+            }
+        }
+        try{
+            var handlerLine = new Cesium.DrawHandler(viewer,Cesium.DrawMode.Line);
+            handlerLine.activeEvt.addEventListener(function(isActive){
+                if(isActive == true){
+                    viewer.enableCursorStyle = false;
+                    viewer._element.style.cursor = '';
+                    $('body').removeClass('drawCur').addClass('drawCur');
+                }
+                else{
+                    viewer.enableCursorStyle = true;
+                    $('body').removeClass('drawCur');
+                }
+            });
+            handlerLine.movingEvt.addEventListener(function(windowPosition){
+                if(handlerLine.isDrawing){
+                    tooltip.showAt(windowPosition,'<p>Right click to complete</p>');
+                }
+                else{
+                    tooltip.showAt(windowPosition,'<p>Click to start drawing</p>');
+                }
+
+            });
+            var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+
+          
+
+
+           handlerLine.drawEvt.addEventListener(function(result) { 
+                tooltip.setVisible(false);
+                var line=result.object;
+                var startPoint = line._positions[0];
+                var endPoint = line._positions[line._positions.length - 1];
+
+                var scartographic = Cesium.Cartographic.fromCartesian(startPoint);
+                var slongitude = Cesium.Math.toDegrees(scartographic.longitude);
+                var slatitude = Cesium.Math.toDegrees(scartographic.latitude);
+                var sheight = scartographic.height;
+
+                var ecartographic = Cesium.Cartographic.fromCartesian(endPoint);
+                var elongitude = Cesium.Math.toDegrees(ecartographic.longitude);
+                var elatitude = Cesium.Math.toDegrees(ecartographic.latitude);
+                var eheight = ecartographic.height;
+
+                //set the start point and end point of profile analysis
+                profile.startPoint = [slongitude, slatitude, sheight];
+                profile.endPoint = [elongitude, elatitude, eheight];
+
+                profile.extendHeight = 40;
+
+                //the callback function after analysis
+                profile.getBuffer(function(buffer) {
+                    var canvas = document.getElementById("pro");
+                    canvas.height = profile._textureHeight;
+                    canvas.width = profile._textureWidth;
+                    var ctx = canvas.getContext("2d");
+                    var imgData = ctx.createImageData(profile._textureWidth, profile._textureHeight);
+
+                    imgData.data.set(buffer);
+                    //put image on canvas
+                    ctx.putImageData(imgData,0,0);
+                    $("#pro").width(600);
+                    $("#pro").height(450);
+                });
+
+                profile.build();
+            });
+
+            document.getElementById("chooseView").onclick = function(){
+                //clear the previous added line
+                handlerLine.clear();
+                $("#pro").width(0);
+                $("#pro").height(0);
+                if(handlerLine.active) {
+                    return;
+                }
+                else {
+                    handlerLine.activate();
+                      //As profile analysis only supprt stright line, click two times trigger completion
+                    handler.setInputAction(function(e){
+                        if(handlerLine.polyline._actualPositions.length == 2) {
+                            var result={};
+                            result.object=handlerLine.polyline;
+                            handlerLine.drawEvt.raiseEvent(result);
+                            handlerLine.deactivate();
+                            handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                        }
+                    },Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                }
+
+            };
+        }
+        catch(e){
+            if(scene.context.depthTexture){
+                swal("Profile analysis","The browser does not support depth texture","warning");
+            }        
+        }
+        
+    }
+    </script>
+</html>

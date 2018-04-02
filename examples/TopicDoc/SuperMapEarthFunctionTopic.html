@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+     <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <title>Instructions for SuperMap Earth</title>
+        <link href='../css/bootstrap.min.css' rel='stylesheet' />
+        <link href='../css/bootstrap-responsive.min.css' rel='stylesheet' />
+         <link href='../css/sm-extend.css' rel='stylesheet' />
+        <link href='../css/sm-doc.css' rel='stylesheet' />
+        <!--[if lte IE 8]>
+        <style>
+        .container .hero-unit{
+                padding: 60px 400px 60px 60px;
+                background-image:url(./examples/images/home_banner2.png);
+                background-repeat:no-repeat;
+                background-position-x:right;
+                background-position-y:bottom;
+            }
+        </style>
+        <![endif]--> <!-- <style>
+			.back2top-icon-real{
+				background:transparent url(a.png) no-repeat fixed bottom right;
+				width:57px;
+				height:57px;
+			}
+		</style> -->
+     </head>
+    <body data-spy="scroll" data-target=".subnav" data-offset="50">
+        <!--导航条-->
+        <div class="navbar navbar-fixed-top" id="navbar">
+        </div>
+        <br>
+        <div id='container' class='container'>
+            <div class='page-header'>
+                <h1>SuperMap Earth Functionality</h1>
+                <hr/>
+                <h2>Log in SuperMap Account<a name="LoginSuperMap"> </a></h2>
+				<p>Click the icon <img src="../images/TopicDOC/ico_Login.png" width="25" height="25"> on the top right to log in. You can use your existing SuperMap Online or Dituhui account or <span style=" font-weight:bold; color:#FF8000">register an account</span>.</p>
+				<div class="pageImage"> <img src="../images/TopicDOC/Dialog_LoginSuperMap.png" width="360" height="337 " style="border:5  solid #ffCCCC"><br> Figure 1 Login Dialog Box</div>
+			 
+			  <p>After you log in, you can click the icon <img src="../images/TopicDOC/ico_Login.png"> to display the account information. Functions including Save and Upload Data have been added.</p>
+			  <div class="pageImage"> <img src="../images/TopicDOC/AfterLoginUI.png" width="222" height="189"><br> Figure 2 User Info </div>
+			  <div class="tips"><h5><img src="../images/TopicDOC/tips.png" width="30" height="30">Tips:</h5>
+			  	<ul class="disc"><li>If you log in an anonymous way, the functions including Save and Upload Data will not be available. You can register to experience more features.</li></ul>
+			  </div>
+			  <h3>Saving a Workspace<a name="Save"> </a></h3>
+			  <p>Click the Save button to save the current scene and layers so that SuperMap Earth will load them next time when you log in. </p>
+			  <h3>Upload Data<a name="UploadData"> </a></h3>
+			  <p>Click the Upload Data button and go to the My Data page of SuperMap Online. Click <img src="../images/TopicDOC/ico_UploadData.png" width="75%" height="75%"> to upload data.</p>
+			  <div class="pageImage"><br> Figure 3 Upload Data Dialog Box</div>
+			  <p>Click the button to navigate to your computer and select any zipped workspace file. You must check to agree the <span style=" font-weight:bold; color:#FF8000">SuperMap Online GIS User Agreement</span> before clicking OK to upload your data. </p>
+			  <div class="tips">
+			    <h5><img src="../images/TopicDOC/tips.png" width="30" height="30">Tips:</h5>
+			    <ul class="disc">
+					<li>Only data in .zip format is supported. So you must zip your file before uploading.</li>
+					<li>You can save a thumbnail image for the scene to the folder. SuperMap Online will show the thumbnail images for scenes and it will help you distinguish between different scenes.</li>
+				</ul>
+			  </div>
+			  <h2>Add Layers<a name="AddLayer"> </a></h2>
+			  <p>Click the <img src="../images/TopicDOC/ico_AddLayer.png" width="29" height="29"> icon to add layers. You can add layers in any of the following ways: </p>
+			  <ul>
+				  <ul class="circle">
+				    <li>SuperMap Cloud</li>
+				    <li>Service Address</li>
+				    <li>Local KML File</li>
+			    </ul>
+			  </ul>
+			  <h3>SuperMap Cloud<a name="AddLayer_Online"> </a></h3>
+			  <p>Click the SuperMap Cloud tab and you can select any 3D scene from SuperMap Online and display it in SuperMap Earth. </p>
+			  <p>Click the thumbnail of any scene and fly to the layers and display the scene. Also layer services will be added to the layer list. </p>
+			  <div class="pageImage"><img src="../images/TopicDOC/Addlayer_Online.png"> <br>Figure 4 Add Layer from SuperMap Cloud</div>
+			  <div class="tips">
+			    <h5><img src="../images/TopicDOC/tips.png" width="30" height="30">Tips:</h5>
+			    <ul class="disc">
+					<li>If you log in an anonymous way, you can only access the Public Service layers from SuperMap Cloud.</li>
+					<li>If you log in using your SuperMap account, besides the public services, you will also be able to select private layer services from My Contents drop-down list.  You can <a href="#UploadData">Upload Data</a> to your contents. </li>
+				</ul>
+			  </div>
+			  
+			  <h3>Service Address<a name="AddLayer_InputURL"> </a></h3>
+			  <p>Click the tab to input the URL address to add a 3D scene published by your SuperMap iServer. SuperMap Earth supports layers of the following types:</p>
+			   <ul>
+				  <ul class="circle">
+				    <li>S3M Layer</li>
+				    <li>Image Layer</li>
+				    <li>SCT Terrain Layer</li>
+			    </ul>
+			  </ul>
+			  <div class="tips">An S3M layer is a SuperMap 3D Model layer. SuperMap Earth uses the S3M layer service to load oblique imagery, BIM, fine models, LIDAR data, etc. </div>
+			  <p>Click to select any layer service type and input the URL address and layer name. Click OK. Then you will fly to that layer and display the scene. Also that layer service will be added to the layer list. </p>
+			  <div class="pageImage"><img src="../images/TopicDOC/Addlayer_URL.png"> <br>Figure 5 Input URL</div>
+			  <h3>Local KML File<a name="AddLayer_KML"> </a></h3>
+			  <p>Click the tab to add a KML file by navigating to your local drive. SuperMap Earth will display the KML file and it will be added to the layer list. </p>
+			  <div class="pageImage"><img src="../images/TopicDOC/Addlayer_KML.png"> <br>Figure 6 Load Local KML File</div>
+			  <h2>Online Basemap Service<a name="BaseMap"> </a></h2>
+			  <p>Click the <img src="../images/TopicDOC/ico_BaseMap.png" width="28" height="28"> icon on the toolbar and show the list of online base maps. The following base maps are supported by SuperMap Earth:</p>
+			   <ul>
+				  <ul class="circle">
+				    <li>Bing Maps</li>
+				    <li>Tianditu</li>
+				    <li>OpenStreetMap</li>
+					<li>STK Terrain</li>
+			    </ul>
+			  </ul>
+			  <p>Click to add any base map to your SuperMap Earth. </p>
+			  <h2>Add Marker<a name="AddMarker"> </a></h2>
+			  <p>Click the <img src="../images/TopicDOC/ico_AddMarker.png"> icon on the toolbar to add a marker at a certain location. A dialog box will be displayed for you to add a marker.</p>
+			  <div class="pageImage"> <img src="../images/TopicDOC/Marker_add.png"><br>Figure 7 Add Marker</div>
+			  <p>Input the marker name and description; click the <img src="../images/TopicDOC/ico_SaveMarker.png"> icon and the marker will be displayed in the scene, also the marker will be added to the list of layers.  You can click the <img src="../images/TopicDOC/ico_CancelMarker.png"> icon not to add any marker. </p>
+			  <div class="tips">
+			    <h5><img src="../images/TopicDOC/tips.png" width="30" height="30">Tips:</h5>
+			    <ul class="disc">
+					<li>Adding markers will help you view the scenes at certain locations quickly.</li>
+					<li>Method: Double click the marker in the list and the camera will quickly move to the marker place. </li>
+				</ul>
+			  </div>
+			  <h2>Search<a name="Search"> </a></h2>
+			  <p>Move your cursor to the <img src="../images/TopicDOC/ico_Search.png"> icon on the top right and input the place name in the box. Click the <img src="../images/TopicDOC/ico_Search.png"> icon to search and once the result is found, the camera will move to that place. </p>
+			  
+        </div>
+		<!--法律申明-->
+		<div class='footer'>
+		<p>Copyright&amp;copy; 2000-2017 SuperMap Software Co., Ltd.</p>
+		</div>
+	</div>
+
+        <script src='../js/jquery.js'></script>
+        <script src='../js/bootstrap.js'></script>
+        <script>
+			window.onstop = function(){
+				alert(1);
+			}
+		</script>
+        <script src="../js/navbar.js"></script>
+    </body>
+</html>

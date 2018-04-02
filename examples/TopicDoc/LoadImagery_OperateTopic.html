@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+     <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <title>Load Image Data</title>
+        <link href='../css/bootstrap.min.css' rel='stylesheet' />
+        <link href='../css/bootstrap-responsive.min.css' rel='stylesheet' />
+         <link href='../css/sm-extend.css' rel='stylesheet' />
+        <link href='../css/sm-doc.css' rel='stylesheet' />
+        <!--[if lte IE 8]>
+        <style>
+        .container .hero-unit{
+                padding: 60px 400px 60px 60px;
+                background-image:url(./examples/images/home_banner2.png);
+                background-repeat:no-repeat;
+                background-position-x:right;
+                background-position-y:bottom;
+            }
+        </style>
+        <![endif]--> <!-- <style>
+			.back2top-icon-real{
+				background:transparent url(a.png) no-repeat fixed bottom right;
+				width:57px;
+				height:57px;
+			}
+		</style> -->
+        <style type="text/css">
+<!--
+.STYLE2 {color: #FF8080}
+-->
+        </style>
+</head>
+    <body data-spy="scroll" data-target=".subnav" data-offset="50">
+        <!--导航条-->
+        <div class="navbar navbar-fixed-top" id="navbar">
+        </div>
+        <br>
+        <div id='container' class='container'>
+            <div class='page-header'>
+                <h1>Manual to Load Image Data</h1>
+                <hr/>
+                <h2>Overview<a name="Summary"> </a></h2>
+				<p>SuperMap supports creating image cache for grid, image, and SIT files stored in UDB, ORACLE, SQLServer  databases that already have image pyramids. Image cache is tiles for image data, which can optimize the publishing at the server side and browsing performance at the client side. Then SuperMap  iClient3D for WebGL (abbreviated as WebGL Client) can access 3D services published by SuperMap  iServer, and load image data.</p>
+				<p>This document explains how WebGL Client load and browse image data. </p>
+				<ol>
+					<ol>
+					  <li><a href="#01CreatCache">Build Cache Data</a></li>
+					  <li><a href="#02Publish3DService">Publish 3D Services</a></li>
+					  <li><a href="#03BrowseImagery">Load Image Data at Client Side</a></li>
+				  </ol>
+				</ol>
+				
+				<h2>Operations<a name="OperationFlow"></a></h2>
+				<p>Here is an example to illustrate the steps.</p>
+				<h3><a name="01CreatCache"></a>1. Build Cache Data</h3>
+				<h4>Introduction</h4><br>
+				<p>Use SuperMap  iDesktop to build 3D image cache file *.sci3d for the image data, which will be helpful for 3D service publishing. </p>
+				<h4>Basic Steps</h4><br>
+				<p>1 Open SuperMap  iDesktop, Workspace Manager&gt;Datasource&gt;Open File Datasource.</p>
+		  	    <p>2 Select the grid dataset to generate cache, right click to display the context menu, click Create Scene Cache. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadImagery_CreatSceneCache.png" width="297" height="426"><br><br> Fig. Create Scene Cache</div>
+				<p>3 In the dialog box that displays, as shown below:</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadImagery_CreatSceneCacheDialog.png" width="688" height="664"><br><br> Fig. Create Scene Cache dialog box</div>
+				
+				<p>4 Add Datasets: Click Add Dataset to select the datasets for creating cache, click OK. </p>
+				<ul>
+				  <ul style="list-style-type:disc;">
+				    <li>Cache Type: Image.</li>
+				    <li>Tiling Type: Global.</li>
+			      </ul>
+				</ul>
+				<p>5 For Parameter Settings, please follow the suggestions below:</p>
+				<ul>
+				  <ul style="list-style-type:disc;">
+				    <li>Cache Name: Input cache name, with default being dataset name@datasource name.</li>
+			        <li>Cache Path: The output path of the cache.</li>
+				    <li>Storage Type: Compact is suggested.</li>
+					<p>The Compact storage type compress and encrypt the data when caching, while the Original type keeps the original information. </p>
+				    <li>Picture Type: <strong>JPG</strong><strong>, PNG</strong><strong>, JPG_PNG</strong> are optional. WebGL Client does not support DXTZ. </li>
+				    <li>Tile Type: Select Global to generate *.sci3d cache.</li>
+				    <li>Tile Size: The resample size for generating tiles after caching. The unit is pixels*pixels. The default is 256*256.</li>
+				    <p>Eight options are provided: 2048*2048, 1024*1024, 512*512, 256*256. You can choose the size based on your needs.</p>
+				    <li>Set password according to your needs. </li>
+				  </ul>
+				</ul>
+				<p>6 Keep Cache Extent and Scales by default. Click OK to generate cache. </p>
+				<h4>Results</h4><br>
+				<p>A <strong>*.sci3d</strong> configuration file will be generated at the specified output path. Moreover, there will be a folder created to store image data, as shown below. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadImagery_SceneCacheResult.png" width="650" height="422"><br> Fig. Results</div>
+				<h3><a name="02Publish3DService"></a>2. Publish 3D Services</h3>
+				<h4>Introduction</h4><br>
+				<p>After creating cache, we will see how to publish the image cache as 3D services to allow WebGL Client to load image data.</p>
+				<h4>Basic Steps</h4><br>
+				<p>1 Open SuperMap  iDesktop, Workspace Manager&gt;Scene&gt;New Spherical Scene. </p>
+				<p>2 Layer Manager&gt;General Layers&gt;Add Image Cache Layer, select the <strong>*.sci3d</strong> configuration file generated. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadImagery_AddImageryLayer.png" width="276" height="173"><br><br> Fig. Add image cache to scene</div>
+				<p>3 After adding cache layer, save the scene and workspace. </p>
+				<p>4 Start iserver via 4 <strong><strong>startup.bat</strong> under %SuperMap iServer_HOME%/bin.</strong></p>
+				<p>5 Start bowser, enter Web Manager via <a target="_blank" href="http://localhost:8090/iserver/manager"><u>http://localhost:8090/iserver/manager</u></a>. Quickly publish a service at Home Page.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/PublishQuickly.png"><br> Fig. Quickly publish one or multiple services</div>
+				<p>6 In the Quickly publish service--Select datasource page, select the Workspace as the Data source, and click Next. </p>
+				<div class="pageImage"><img src="../images/TopicDOC/DataSource.png"><br><br> Fig. Select the Workspace as the Data source</div>
+				<p>7 In the Quickly publish service--Configure data page, click Remote Browse to select the workspace, click Next.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadImagery_SelectWorkspaceFile.png" width="727" height="279"><br><br> Fig. Select the workspace</div>
+				<p>8 In the Quickly publish service--Select service type page, Select REST 3D Service, click Next.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/Select3DService.png"><br> Fig. Select REST 3D Service</div>
+				<p>When finished, click Finish and Close.</p>
+				
+				<h4>Results</h4><br>
+				<p>The service displays in the service list <a target="_blank" href="http://localhost:8090/iserver/services">http://localhost:8090/iserver/services</a>, as shown below.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadImagery_PublishResult.png" width="234" height="269"><br> Fig. The published service</div>
+				<h3><a name="03BrowseImagery"></a>3. Load Image Data at Client Side</h3>
+				<h4>Introduction</h4><br>
+				<p>After publishing service, WebGL Client can load the image data.</p>
+				<p class="STYLE2">Please place WebGL package at %SuperMap iServer_HOME%/webapps.</p>
+				<h4>Basic Steps</h4><br>
+				<p>1 Get the url of the 3D data.</p>
+				<ul>
+					<ul style="list-style-type:disc;">
+					  <li>Enter <a target="_blank" href="http://localhost:8090/iserver/services"><u>http://localhost:8090/iserver/services</u></a> and find the published 3D service.</li>
+					  <li>Enter root directory page, click realspace.</li>
+					  <li>Enter 3D page, click datas. </li>
+					  <li>Enter datas page, click links below.</li>
+					  <li>Enter data page, copy the address of the url. </li>
+					</ul>
+				</ul>
+				
+<div class="pageImage"><img src="../images/TopicDOC/LoadImagery_CopyURL.png" width="768" height="66"><br><br> Fig. Copy url address </div>
+				<p>2 Enter WebGL package in <strong>%SuperMap iServer_HOME%/webapps</strong>, open <strong>terrainAndImagery.html</strong> in text editor under the examples folder, change the address in SuperMapimageryProvider() to the address we just copied, as shown below. </p>
+				
+              <div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_ModifySample.png" width="652" height="436"><br> Fig. Change parameter </div>
+
+                <p>3 Open the <strong>terrainAndImagery</strong>.html page, that is, enter the url <u>http://localhost:8090/%WebGL Package%/examples/terrainAndImagery.html</u> in the browser.</p>
+			  <h4>Results</h4><br>
+				<p>After you open the page, the camera flies to the position of the image data, as shown below.</p>
+				<div class="pageImage"><img src="../images/TopicDOC/LoadTerrain_BrowseResult.png"><br> Fig. Image loaded at WebGL Client</div>
+			    <p>Note: For more information about how to load terrain data, please refer to <a href="LoadTerrain_OperateTopic.html" target="_blank">Load Terrain Data</strong></a>. </p>
+</div>
+		<!--法律申明-->
+		<div class='footer'>
+		<p>Copyright&amp;copy; 2000-2017 SuperMap Software Co., Ltd.</p>
+		</div>
+	</div>
+
+        <script src='../js/jquery.js'></script>
+        <script src='../js/bootstrap.js'></script>
+        <script>
+			window.onstop = function(){
+				alert(1);
+			}
+		</script>
+        <script src="../js/navbar.js"></script>
+    </body>
+</html>
